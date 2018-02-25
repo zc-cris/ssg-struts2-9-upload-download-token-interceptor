@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC
+	"-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
+	"http://struts.apache.org/dtds/struts-2.5.dtd">
+
+<struts>
+	<!-- 配置struts2 可以受理请求的扩展名:以.action，.do,结尾或者什么都不写均可 -->
+	<constant name="struts.action.extension" value="action,do,"></constant>
+	<!-- 通配符的配置方法一：需要设置这个常量为true，然后再在action中单独设置 -->
+	<constant name="struts.enable.DynamicMethodInvocation" value="true"/>
+	<!-- 静态方法调用,不建议使用，用于直接url调用action方法 -->
+	<constant name="struts.ognl.allowStaticMethodAccess" value="true"></constant>
+	<!-- 配置国际化资源文件  value值必须和src目录下的国际化资源文件的基名相同-->
+	<constant name="struts.custom.i18n.resources" value="i18n"></constant>
+	
+	<package name="test" extends="struts-default" >
+		 
+		 <!-- 配置使用 paramsPrepareParamsStack 作为默认的拦截器栈 -->
+		 <!-- 并且修改 PrepareInterceptor 拦截器的 alwaysInvokePrepare 属性值为false（默认为true） ，为了使拦截器不再调用默认的prepare方法-->
+		 <interceptors>
+		 	<interceptor name="myInterceptor" class="cn.zc.cris.interceptor.MyInterceptor"></interceptor>
+		 	<interceptor-stack name="zc.cris.Stack">
+		 		<interceptor-ref name="paramsPrepareParamsStack">
+		 			<param name="prepare.alwaysInvokePrepare">false</param>
+		 			<!-- 以字节为单位 1kb=1000字节，允许的上传文件的单个最大值默认为2M -->
+		 			<param name="fileUpload.maximumSize">2000</param>
+		 			<!-- 允许上传文件的类型 -->
+		 			<param name="fileUpload.allowedTypes">text/html,text/xml</param>
+		 			<!-- 允许上传文件的扩展名 -->
+		 			<param name="fileUpload.allowedExtensions">html,dtd,xml</param>
+		 		</interceptor-ref>
+		 	</interceptor-stack>
+		 </interceptors>
+		 
+		 <default-interceptor-ref name="zc.cris.Stack"></default-interceptor-ref>
+		
+		<action name="testUpload" class="cn.zc.cris.upload.TestUploadAction">
+			<result>/success.jsp</result>
+			<result name="input">/upload.jsp</result>
+		</action>
+		
+		<action name="testDownload" class="cn.zc.cris.download.TestDownLoadAction">
+	        <result type="stream">
+		        <param name="contentType">APPLICATION/OCTET-STREAM</param>
+		        <param name="inputName">inputStream</param>
+		        <param name="contentDisposition">attachment;filename="${filename}"</param>
+		        <param name="bufferSize">4096</param>
+			</result>
+		</action>
+		
+		<!-- struts2中的防止表单重复提交 -->
+		<action name="testToken" class="cn.zc.cris.token.TestTokenAction">
+			<!-- <interceptor-ref name="token"></interceptor-ref> -->
+			<interceptor-ref name="myInterceptor"></interceptor-ref>
+			<interceptor-ref name="tokenSession"></interceptor-ref>
+			<interceptor-ref name="defaultStack"></interceptor-ref>
+			<result>/success.jsp</result>
+			<!-- <result name="invalid.token">/tokenError.jsp</result> -->
+		</action>
+		
+	</package>
+</struts>
+
+	
